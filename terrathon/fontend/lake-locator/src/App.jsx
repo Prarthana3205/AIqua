@@ -73,6 +73,8 @@ function App() {
   const [error, setError] = useState(null);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [nearestLakes, setNearestLakes] = useState([]);
+  const [sortedLakes, setSortedLakes] = useState([]);
+
 
   // Handle scroll event
   useEffect(() => {
@@ -194,6 +196,26 @@ function App() {
       console.error("❌ Error sending data to backend:", error);
     }
   };
+
+
+  const fetchSortedLakes = async (lat, lon) => {
+    try {
+        const response = await fetch("http://127.0.0.1:8000/api/sorted_lakes_by_main_sum/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ latitude: lat, longitude: lon })
+        });
+
+        const result = await response.json();
+        console.log("Sorted Lakes by main_sum:", result.sorted_lakes);
+
+        if (result.sorted_lakes) {
+            setSortedLakes(result.sorted_lakes);
+        }
+    } catch (error) {
+        console.error("Error fetching sorted lakes:", error);
+    }
+};
 
   return (
     <div className="app-container">
@@ -326,6 +348,37 @@ function App() {
           </section>
         )}
 
+
+
+        {/*the most polluted lakes table*/ }
+        {sortedLakes.length > 0 && (
+    <section className="sorted-lakes-section">
+      <h2>Sorted Lakes by Main Sum (Descending Order)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Lake Name</th>
+            <th>Distance (km)</th>
+            <th>Main Sum</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedLakes.map((lake, index) => (
+            <tr key={index}>
+              <td>{lake.name}</td>
+              <td>{lake.distance.toFixed(2)}</td>
+              <td>{lake.main_sum ? lake.main_sum : 'N/A'}</td>
+              <td>{lake.latitude}</td>
+              <td>{lake.longitude}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+)}
+
         {/* Map Section */}
         <section id="map" className="map-section">
           <MapContainer center={[latitude || 20.5937, longitude || 78.9629]} zoom={12} style={{ height: "400px", width: "100%" }}>
@@ -348,16 +401,15 @@ function App() {
             <br />
             This project aims to address these challenges by providing a <strong>data-driven platform</strong> for monitoring, analyzing, and preserving lakes. Using advanced technologies, including real-time data collection, predictive analytics, and user-friendly tools, we empower individuals, communities, and organizations to take proactive steps toward lake conservation.
           </p>
-          <p>
-            <strong>Key Features:</strong>
-            <ul>
-              <li>Real-time monitoring of water quality parameters such as pH, temperature, and dissolved oxygen.</li>
-              <li>Predictive analytics to forecast future ecological health and identify potential risks.</li>
-              <li>Actionable recommendations for sustainable lake management and pollution control.</li>
-              <li>Interactive maps and visualizations to explore lake data and trends.</li>
-              <li>Accessible tools for common users to contribute to environmental preservation efforts.</li>
-            </ul>
-          </p>
+          <p><strong>Key Features:</strong></p>
+<ul>
+  <li>Real-time monitoring of water quality parameters such as pH, temperature, and dissolved oxygen.</li>
+  <li>Predictive analytics to forecast future ecological health and identify potential risks.</li>
+  <li>Actionable recommendations for sustainable lake management and pollution control.</li>
+  <li>Interactive maps and visualizations to explore lake data and trends.</li>
+  <li>Accessible tools for common users to contribute to environmental preservation efforts.</li>
+</ul>
+
           <p>
             Together, we can create a future where lakes thrive as healthy ecosystems, benefiting both nature and society. Join us in our mission to protect and restore these invaluable natural resources.
           </p>
